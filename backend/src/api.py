@@ -24,7 +24,8 @@ CORS(app)
     GET /drinks
         it should be a public endpoint
         it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
+    returns status code 200 and json {"success": True, "drinks": drinks} 
+    where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
 
@@ -32,10 +33,15 @@ CORS(app)
 @app.route('/drinks')
 def get_drinks():
     drinks = Drink.query.all()
-    return jsonify({
-        'success': True,
-        'drinks': [drink.short() for drink in drinks]
-    }), 200
+    try:
+
+        return jsonify({
+            'success': True,
+            'drinks': [drink.short() for drink in drinks]
+        }), 200
+
+    except BaseException:
+        abort(404)
 
 
 '''
@@ -52,10 +58,14 @@ def get_drinks():
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(jwt):
     drinks = Drink.query.all()
-    return jsonify({
-        'success': True,
-        'drinks': [drink.long() for drink in drinks]
-    }), 200
+
+    try:
+        return jsonify({
+            'success': True,
+            'drinks': [drink.long() for drink in drinks]
+        }), 200
+    except BaseException:
+        abort(404)
 
 
 '''
@@ -83,7 +93,7 @@ def create_drink(jwt):
 
         return jsonify({
             'success': True,
-            'drink': drink.long()
+            'drinks': [drink.long()]
         }), 200
     except BaseException:
         abort(422)
@@ -107,10 +117,9 @@ def create_drink(jwt):
 def update_drink(jwt, drink_id):
     body = request.get_json()
     drink = Drink.query.get(drink_id)
-    print(drink_id)
 
     if not drink:
-        abort(404)
+        abort(401)
 
     try:
         drink.title = body.get('title')
@@ -119,11 +128,11 @@ def update_drink(jwt, drink_id):
         drink.update()
         return jsonify({
             'success': True,
-            'drink': drink.long()
+            'drinks': [drink.long()]
         }), 200
 
     except BaseException:
-        abort(400)
+        abort(401)
 
 
 '''
@@ -149,7 +158,7 @@ def delete_drink(jwt, drink_id):
             'delete': drink_id
         }), 200
     except BaseException:
-        abort(400)
+        abort(401)
 
 
 # Error Handling
@@ -170,11 +179,11 @@ def unprocessable(error):
 '''
 @TODO implement error handlers using the @app.errorhandler(error) decorator
     each error handler should return (with approprate messages):
-            jsonify({
-                    "success": False, 
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
+        jsonify({
+                "success": False, 
+                "error": 404,
+                "message": "resource not found"
+                }), 404
 '''
 
 '''
